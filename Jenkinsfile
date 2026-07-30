@@ -1,16 +1,24 @@
 pipeline {
+
     agent any
 
     tools {
-        jdk 'JDK11'
+        jdk 'JDK17'
         maven 'Maven3'
     }
 
     environment {
-        TOMCAT_HOME = "/var/lib/tomcat10"
+        TOMCAT_HOME="/opt/tomcat"
     }
 
     stages {
+
+        stage('Git Checkout') {
+            steps {
+                git branch: 'main',
+                url: 'https://github.com/cjayashri72-web/HostelManagment1.git'
+            }
+        }
 
         stage('Build') {
             steps {
@@ -18,22 +26,51 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('Stop Tomcat') {
             steps {
                 sh '''
-                cp target/*.war $TOMCAT_HOME/webapps/HostelManagement.war
+                $TOMCAT_HOME/bin/shutdown.sh || true
+                sleep 10
                 '''
             }
         }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                rm -f $TOMCAT_HOME/webapps/*.war
+                cp target/*.war $TOMCAT_HOME/webapps/
+                '''
+            }
+        }
+
+        stage('Start Tomcat') {
+            steps {
+                sh '''
+                $TOMCAT_HOME/bin/startup.sh
+                sleep 15
+                '''
+            }
+        }
+
     }
 
     post {
+
         success {
-            echo 'Application deployed successfully.'
+            echo "Deployment Successful"
         }
 
         failure {
-            echo 'Build failed.'
+            echo "Deployment Failed"
         }
+
     }
+
 }
