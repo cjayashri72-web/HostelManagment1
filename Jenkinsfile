@@ -32,30 +32,45 @@ pipeline {
             }
         }
 
-       stage('Stop Tomcat') {
-    steps {
-        sh '''
-        $TOMCAT_HOME/bin/shutdown.sh || true
-        sleep 10
-        '''
-    }
-}
+        stage('Stop Tomcat') {
+            steps {
+                sh '''
+                $TOMCAT_HOME/bin/shutdown.sh || true
+                sleep 10
+                '''
+            }
+        }
 
-stage('Deploy') {
-    steps {
-        sh '''
-        rm -rf $TOMCAT_HOME/webapps/HostelManagementSystem*
-        cp target/*.war $TOMCAT_HOME/webapps/
-        '''
-    }
-}
+        stage('Deploy') {
+            steps {
+                sh '''
+                rm -f $TOMCAT_HOME/webapps/*.war
+                cp target/*.war $TOMCAT_HOME/webapps/
+                '''
+            }
+        }
 
-stage('Start Tomcat') {
-    steps {
-        sh '''
-        chmod +x $TOMCAT_HOME/bin/*.sh
-        $TOMCAT_HOME/bin/startup.sh
-        sleep 15
-        '''
+        stage('Start Tomcat') {
+            steps {
+                sh '''
+                $TOMCAT_HOME/bin/startup.sh
+                sleep 15
+                '''
+            }
+        }
+
     }
+
+    post {
+
+        success {
+            echo "Deployment Successful"
+        }
+
+        failure {
+            echo "Deployment Failed"
+        }
+
+    }
+
 }
