@@ -15,7 +15,7 @@ pipeline {
 
         stage('Git Checkout') {
             steps {
-                git branch: 'main',
+                git branch: 'master',
                 url: 'https://github.com/cjayashri72-web/HostelManagment1.git'
             }
         }
